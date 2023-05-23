@@ -19,21 +19,8 @@ function Card({
 
   useEffect(() => {
     setIsAdded(isItemInCart());
-  }, [isItemInCart]);
-
-  useEffect(() => {
     setIsFavorite(isItemInFavorite());
-
-    // Обновление состояния isFavorite при изменении favorites в localStorage
-    const storedFavorites = localStorage.getItem("favorites");
-    if (storedFavorites) {
-      const parsedFavorites = JSON.parse(storedFavorites);
-      const isItemFavorite = parsedFavorites.some(
-        (item) => item.title === title
-      );
-      setIsFavorite(isItemFavorite);
-    }
-  }, [favorites, isItemInFavorite, title]);
+  }, [isItemInCart, isItemInFavorite]);
 
   const handleClick = () => {
     if (!isItemInCart()) {
@@ -49,8 +36,8 @@ function Card({
     if (!isItemInFavorite()) {
       onFavorite({ price, imageUrl, title });
     } else {
-      const existingFavorite = favorites.find((item) => item.title === title);
-      onDeleteFavorite(existingFavorite);
+      const existingItem = favorites.find((item) => item.title === title);
+      onDeleteFavorite(existingItem);
     }
 
     setIsFavorite(!isFavorite);

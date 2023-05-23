@@ -17,15 +17,18 @@ function App() {
       .catch((error) => console.error("Ошибка при получении товаров:", error));
 
     axios
-      .get("https://6468cd64e99f0ba0a82d4166.mockapi.io/cart")
+      .get("https://646c9c907b42c06c3b2ba1d3.mockapi.io/cart")
       .then((res) => setCartItems(res.data))
       .catch((error) =>
         console.error("Ошибка при получении товаров в корзине:", error)
       );
-    const storedFavorites = localStorage.getItem("favorites");
-    if (storedFavorites) {
-      setFavorites(JSON.parse(storedFavorites));
-    }
+
+    axios
+      .get("https://646c9c907b42c06c3b2ba1d3.mockapi.io/favorites")
+      .then((res) => setFavorites(res.data))
+      .catch((error) =>
+        console.error("Ошибка при получении товаров в корзине:", error)
+      );
   }, []);
 
   const getTotalPriceInCart = () =>
@@ -33,8 +36,16 @@ function App() {
 
   const onAddToCart = (obj) => {
     axios
-      .post("https://6468cd64e99f0ba0a82d4166.mockapi.io/cart", obj)
+      .post("https://646c9c907b42c06c3b2ba1d3.mockapi.io/cart", obj)
       .then((res) => setCartItems((prev) => [...prev, obj]))
+      .catch((error) =>
+        console.error("Ошибка при добавлении товара в корзину:", error)
+      );
+  };
+  const onAddToFavorite = (obj) => {
+    axios
+      .post("https://646c9c907b42c06c3b2ba1d3.mockapi.io/favorites", obj)
+      .then((res) => setFavorites((prev) => [...prev, obj]))
       .catch((error) =>
         console.error("Ошибка при добавлении товара в корзину:", error)
       );
@@ -42,31 +53,11 @@ function App() {
 
   const onRemoveCart = (id) => {
     axios
-      .delete(`https://6468cd64e99f0ba0a82d4166.mockapi.io/cart/${id}`)
+      .delete(`https://646c9c907b42c06c3b2ba1d3.mockapi.io/cart/${id}`)
       .then(() => setCartItems((prev) => prev.filter((item) => item.id !== id)))
       .catch((error) =>
         console.error("Ошибка при удалении товара из корзины:", error)
       );
-  };
-
-  const onAddFavorite = (obj) => {
-    const isFavoriteExist = favorites.some(
-      (favorite) => favorite.title === obj.title
-    );
-    if (!isFavoriteExist) {
-      const updatedFavorites = [...favorites, obj];
-      setFavorites(updatedFavorites);
-      localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
-    }
-    console.log(favorites);
-  };
-
-  const handleDeleteFavorite = (favoriteToDelete) => {
-    const updatedFavorites = favorites.filter(
-      (favorite) => favorite.title !== favoriteToDelete.title
-    );
-    setFavorites(updatedFavorites);
-    localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
   };
 
   const onDeleteChoice = (itemToDelete) => {
@@ -76,7 +67,7 @@ function App() {
     setCartItems(updatedItems);
     axios
       .delete(
-        `https://6468cd64e99f0ba0a82d4166.mockapi.io/cart/${itemToDelete.id}`
+        `https://646c9c907b42c06c3b2ba1d3.mockapi.io/cart/${itemToDelete.id}`
       )
       .catch((error) => {
         console.error(
@@ -84,6 +75,24 @@ function App() {
           error
         );
         setCartItems((prevItems) => [...prevItems, itemToDelete]);
+      });
+  };
+
+  const onDeleteFavorite = (itemToDelete) => {
+    const updatedItems = favorites.filter(
+      (item) => item.title !== itemToDelete.title
+    );
+    setFavorites(updatedItems);
+    axios
+      .delete(
+        `https://646c9c907b42c06c3b2ba1d3.mockapi.io/favorites/${itemToDelete.id}`
+      )
+      .catch((error) => {
+        console.error(
+          `Error deleting item with ID ${itemToDelete.id} from server:`,
+          error
+        );
+        setFavorites((prevItems) => [...prevItems, itemToDelete]);
       });
   };
 
@@ -147,13 +156,13 @@ function App() {
                 price={obj.price}
                 imageUrl={obj.imageUrl}
                 onPlus={onAddToCart}
-                onFavorite={() => onAddFavorite(obj)}
+                onFavorite={onAddToFavorite}
                 isItemInCart={() => isItemInCart(obj.title)}
                 cartItems={cartItems}
-                isItemInFavorite={isItemInFavorite}
-                favorite={favorites}
+                isItemInFavorite={() => isItemInFavorite(obj.title)}
+                favorites={favorites}
                 onDelete={onDeleteChoice}
-                onDeleteFavorite={handleDeleteFavorite}
+                onDeleteFavorite={onDeleteFavorite}
               />
             ))}
         </div>
